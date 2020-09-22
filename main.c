@@ -70,6 +70,9 @@ static ko_longopt_t long_options[] = {
 	{ "chain-gap-scale",ko_required_argument, 343 },
 	{ "alt",            ko_required_argument, 344 },
 	{ "alt-drop",       ko_required_argument, 345 },
+    //begin_owen_code
+    {"export-seed-coords", ko_required_argument, 346},
+    //end_owen_code
 	{ "help",           ko_no_argument,       'h' },
 	{ "max-intron-len", ko_required_argument, 'G' },
 	{ "version",        ko_no_argument,       'V' },
@@ -110,7 +113,7 @@ int main(int argc, char *argv[])
 	const char *opt_str = "2aSDw:k:K:t:r:f:Vv:g:G:I:d:XT:s:x:Hcp:M:n:z:A:B:O:E:m:N:Qu:R:hF:LC:yYPo:";
 	ketopt_t o = KETOPT_INIT;
 	mm_mapopt_t opt;
-	mm_idxopt_t ipt;
+	mm_idxopt_t ipt; //Indexing options
 	int i, c, n_threads = 3, n_parts, old_best_n = -1;
 	char *fnw = 0, *rg = 0, *junc_bed = 0, *s, *alt_list = 0;
 	FILE *fp_help = stderr;
@@ -217,6 +220,12 @@ int main(int argc, char *argv[])
 		else if (c == 343) opt.chain_gap_scale = atof(o.arg); // --chain-gap-scale
 		else if (c == 344) alt_list = o.arg; // --alt
 		else if (c == 345) opt.alt_drop = atof(o.arg); // --alt-drop
+        //begin_owen_code
+        else if (c == 346) {
+            mm_dbg_flag |= MM_DBG_EXPORT_SEED_COORDS; //--export-seed-coords
+            opt.scoords_file = o.arg;
+        } 
+        //end_owen_code
 		else if (c == 314) { // --frag
 			yes_or_no(&opt, MM_F_FRAG_MODE, o.longidx, o.arg, 1);
 		} else if (c == 315) { // --secondary

@@ -14,6 +14,10 @@
 #define MM_DBG_PRINT_SEED    0x4
 #define MM_DBG_PRINT_ALN_SEQ 0x8
 
+//begin_owen_code
+#define MM_DBG_EXPORT_SEED_COORDS 0x10
+//end_owen_code
+
 #define MM_SEED_LONG_JOIN  (1ULL<<40)
 #define MM_SEED_IGNORE     (1ULL<<41)
 #define MM_SEED_TANDEM     (1ULL<<42)

@@ -69,8 +69,8 @@ mm128_t *mm_chain_dp(int max_dist_x, int max_dist_y, int bw, int max_skip, int m
 				c_log = log_dd;
 				if (sidi != sidj && dr == 0) ++sc; // possibly due to overlapping paired ends; give a minor bonus
 				else if (dr > dq || sidi != sidj) gap_cost = c_lin < c_log? c_lin : c_log;
-				else gap_cost = c_lin + (c_log>>1);
-			} else gap_cost = (int)(dd * .01 * avg_qspan) + (log_dd>>1);
+				else gap_cost = c_lin + (c_log>>1); 
+			} else gap_cost = (int)(dd * .01 * avg_qspan) + (log_dd>>1); //This is the gamma function presented in the paper: 0.01*w_avg*|l| + 0.5log(|l|)
 			sc -= (int)((double)gap_cost * gap_scale + .499);
 			sc += f[j];
 			if (sc > max_f) {

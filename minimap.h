@@ -152,6 +152,7 @@ typedef struct {
 	int64_t max_sw_mat;
 
 	const char *split_prefix;
+    const char *scoords_file;
 } mm_mapopt_t;
 
 // index reader

@@ -1,7 +1,9 @@
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <assert.h>
 #include <errno.h>
+#include <pthread.h>
 #include "kthread.h"
 #include "kvec.h"
 #include "kalloc.h"
@@ -269,6 +271,8 @@ static mm_reg1_t *align_regs(const mm_mapopt_t *opt, const mm_idx_t *mi, void *k
 	return regs;
 }
 
+pthread_mutex_t scoord_file_mtx = PTHREAD_MUTEX_INITIALIZER;
+
 void mm_map_frag(const mm_idx_t *mi, int n_segs, const int *qlens, const char **seqs, int *n_regs, mm_reg1_t **regs, mm_tbuf_t *b, const mm_mapopt_t *opt, const char *qname)
 {
 	int i, j, rep_len, qlen_sum, n_regs0, n_mini_pos;
@@ -295,15 +299,35 @@ void mm_map_frag(const mm_idx_t *mi, int n_segs, const int *qlens, const char **
 	if (opt->flag & MM_F_HEAP_SORT) a = collect_seed_hits_heap(b->km, opt, opt->mid_occ, mi, qname, &mv, qlen_sum, &n_a, &rep_len, &n_mini_pos, &mini_pos);
 	else a = collect_seed_hits(b->km, opt, opt->mid_occ, mi, qname, &mv, qlen_sum, &n_a, &rep_len, &n_mini_pos, &mini_pos);
 
-	if (mm_dbg_flag & MM_DBG_PRINT_SEED) {
+	if (mm_dbg_flag & MM_DBG_PRINT_SEED) { //(I believe this is what I want to export)
 		fprintf(stderr, "RS\t%d\n", rep_len);
 		for (i = 0; i < n_a; ++i)
 			fprintf(stderr, "SD\t%s\t%d\t%c\t%d\t%d\t%d\n", mi->seq[a[i].x<<1>>33].name, (int32_t)a[i].x, "+-"[a[i].x>>63], (int32_t)a[i].y, (int32_t)(a[i].y>>32&0xff),
 					i == 0? 0 : ((int32_t)a[i].y - (int32_t)a[i-1].y) - ((int32_t)a[i].x - (int32_t)a[i-1].x));
+            //SD, ref name, ref position, alignment orientation (1), delta y - delta x (gap length)
+            //(1): the syntax "+-"[a[i].x>>63] selects either the + or - character using the last bit of a[i].x   
 	}
 
+    //begin_owen_code
+    if (mm_dbg_flag & MM_DBG_EXPORT_SEED_COORDS) {
+        int bytes_written = 0;
+        pthread_mutex_lock(&scoord_file_mtx);
+            FILE* scoord_fp = fopen(opt->scoords_file, "a");
+            bytes_written += fprintf(scoord_fp, "@%s,%s\n", mi->seq[a[i].x<<1>>33].name, qname); 
+            for (i = 0; i < n_a; i++) {
+                bytes_written += fprintf(scoord_fp, "%x,%x\n", (uint32_t) a[i].x, (uint32_t) a[i].y);
+                if(bytes_written > BUFSIZ - 100){
+                    fflush(scoord_fp);
+                    bytes_written = 0;
+                }
+            }
+            fclose(scoord_fp);
+        pthread_mutex_unlock(&scoord_file_mtx);
+    }
+    //end_owen_code
+
 	// set max chaining gap on the query and the reference sequence
-	if (is_sr)
+	if (is_sr) //is_sr ... "is short read?"
 		max_chain_gap_qry = qlen_sum > opt->max_gap? qlen_sum : opt->max_gap;
 	else max_chain_gap_qry = opt->max_gap;
 	if (opt->max_gap_ref > 0) {
