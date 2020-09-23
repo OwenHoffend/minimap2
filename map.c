@@ -313,8 +313,9 @@ void mm_map_frag(const mm_idx_t *mi, int n_segs, const int *qlens, const char **
         int bytes_written = 0;
         pthread_mutex_lock(&scoord_file_mtx);
             FILE* scoord_fp = fopen(opt->scoords_file, "a");
-            bytes_written += fprintf(scoord_fp, "@%s,%s\n", mi->seq[a[i].x<<1>>33].name, qname); 
+            bytes_written += fprintf(scoord_fp, "@%s\n", qname);
             for (i = 0; i < n_a; i++) {
+                if (EN_SCOORD_DS && (i % SCOORD_DS_RATE)) continue; //Downsampling to reduce file size
                 bytes_written += fprintf(scoord_fp, "%x,%x\n", (uint32_t) a[i].x, (uint32_t) a[i].y);
                 if(bytes_written > BUFSIZ - 100){
                     fflush(scoord_fp);

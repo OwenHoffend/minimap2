@@ -23,8 +23,6 @@ def load_anchors(fn, num_quers):
                 if line.startswith("@") or line == "":
                     if q_cnt != 0:
                         queries.append(q)
-                    else:
-                        ref_name = line.split(',')[0][1:]
                     if q_cnt == num_quers:
                         break
                     if line == "":
@@ -33,7 +31,7 @@ def load_anchors(fn, num_quers):
                         break
                     q = Query()  
                     q_cnt = q_cnt + 1
-                    q.name = line.split(',')[1].strip()
+                    q.name = line[1:].strip()
                 else:
                     ls = line.split(',')
                     q.x.append(int(ls[0], 16))
@@ -41,7 +39,7 @@ def load_anchors(fn, num_quers):
     except IOError as e:
         print(e)
         exit()
-    return queries, ref_name
+    return queries
 
 def plot_chain_lengths(qd):
     x, y = np.array(qd.x), np.array(qd.y)
@@ -60,7 +58,7 @@ if __name__ == "__main__":
     parser.add_argument("--qrange", nargs='+', type=int, help="Query index range, as a python list")
     args = parser.parse_args()
     fn, num_quers = args.fn, args.n
-    queries, ref_name = load_anchors(fn, num_quers)
+    queries = load_anchors(fn, num_quers)
 
     merged_queries = Query()
     merged_queries.merge(queries)
@@ -80,5 +78,5 @@ if __name__ == "__main__":
                 borderaxespad=0, frameon=False)
     plt.xlabel("Reference Position")
     plt.ylabel("Query Position")
-    plt.title("Ref: " + ref_name)
+    plt.title("Anchors from: {}".format(fn))
     plt.show()
