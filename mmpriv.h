@@ -16,7 +16,7 @@
 
 //begin_owen_code
 #define MM_DBG_EXPORT_SEED_COORDS 0x10
-#define EN_SCOORD_DS 1
+#define EN_SCOORD_DS 0
 #define SCOORD_DS_RATE 5
 //end_owen_code
 

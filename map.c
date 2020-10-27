@@ -244,7 +244,7 @@ static mm128_t *collect_seed_hits(void *km, const mm_mapopt_t *opt, int max_occ,
 		}
 	}
 	kfree(km, m);
-	radix_sort_128x(a, a + (*n_a));
+	radix_sort_128x(a, a + (*n_a)); //Seed sorting ("rs_sort_128x") in UCLA paper
 	return a;
 }
 
@@ -296,6 +296,8 @@ void mm_map_frag(const mm_idx_t *mi, int n_segs, const int *qlens, const char **
 	hash  = __ac_Wang_hash(hash);
 
 	collect_minimizers(b->km, opt, mi, n_segs, qlens, seqs, &mv);
+
+    //Seed sorting is performed here, I believe
 	if (opt->flag & MM_F_HEAP_SORT) a = collect_seed_hits_heap(b->km, opt, opt->mid_occ, mi, qname, &mv, qlen_sum, &n_a, &rep_len, &n_mini_pos, &mini_pos);
 	else a = collect_seed_hits(b->km, opt, opt->mid_occ, mi, qname, &mv, qlen_sum, &n_a, &rep_len, &n_mini_pos, &mini_pos);
 
